@@ -3,6 +3,7 @@ import SwiftUI
 
 struct UsagePopoverView: View {
     @ObservedObject var store: UsageStore
+
     @State private var page: Page = .usage
     @State private var refreshRotation = 0.0
 
@@ -19,34 +20,56 @@ struct UsagePopoverView: View {
                 usagePage
                     .transition(
                         .asymmetric(
-                            insertion: .move(edge: .leading),
-                            removal: .move(edge: .leading)
+                            insertion: .move(
+                                edge: .leading
+                            ),
+                            removal: .move(
+                                edge: .leading
+                            )
                         )
                     )
 
             case .settings:
                 SettingsView(store: store) {
-                    withAnimation(.easeInOut(duration: 0.18)) {
+                    withAnimation(
+                        .easeInOut(
+                            duration: 0.18
+                        )
+                    ) {
                         page = .usage
                     }
                 }
                 .transition(
                     .asymmetric(
-                        insertion: .move(edge: .trailing),
-                        removal: .move(edge: .trailing)
+                        insertion: .move(
+                            edge: .trailing
+                        ),
+                        removal: .move(
+                            edge: .trailing
+                        )
                     )
                 )
 
             case .limit(let limit):
-                LimitDetailView(limit: limit) {
-                    withAnimation(.easeInOut(duration: 0.18)) {
+                LimitDetailView(
+                    limit: limit
+                ) {
+                    withAnimation(
+                        .easeInOut(
+                            duration: 0.18
+                        )
+                    ) {
                         page = .usage
                     }
                 }
                 .transition(
                     .asymmetric(
-                        insertion: .move(edge: .trailing),
-                        removal: .move(edge: .trailing)
+                        insertion: .move(
+                            edge: .trailing
+                        ),
+                        removal: .move(
+                            edge: .trailing
+                        )
                     )
                 )
             }
@@ -64,15 +87,42 @@ struct UsagePopoverView: View {
     }
 
     private var usagePage: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
+        VStack(
+            alignment: .leading,
+            spacing: 14
+        ) {
+            HStack(alignment: .top) {
+                VStack(
+                    alignment: .leading,
+                    spacing: 3
+                ) {
                     Text("CodexWatch")
                         .font(.headline)
 
                     Text(headerSubtitle)
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(
+                            .secondary
+                        )
+
+                    HStack(spacing: 5) {
+                        Image(
+                            systemName:
+                                store
+                                    .connectionStatus
+                                    .systemImage
+                        )
+
+                        Text(
+                            store
+                                .connectionStatus
+                                .title
+                        )
+                    }
+                    .font(.caption2)
+                    .foregroundStyle(
+                        connectionStatusColor
+                    )
                 }
 
                 Spacer()
@@ -82,64 +132,122 @@ struct UsagePopoverView: View {
                         await store.refresh()
                     }
                 } label: {
-                    Image(systemName: "arrow.clockwise")
-                        .rotationEffect(.degrees(refreshRotation))
+                    Image(
+                        systemName:
+                            "arrow.clockwise"
+                    )
+                    .rotationEffect(
+                        .degrees(
+                            refreshRotation
+                        )
+                    )
+                    .frame(
+                        width: 28,
+                        height: 28
+                    )
+                    .contentShape(
+                        Rectangle()
+                    )
                 }
                 .buttonStyle(.plain)
                 .disabled(store.isLoading)
-                .help(store.isLoading ? "Refreshing…" : "Refresh")
-                .onChange(of: store.isLoading) { _, isLoading in
+                .help(
+                    store.isLoading
+                        ? "Refreshing…"
+                        : "Refresh"
+                )
+                .onChange(
+                    of: store.isLoading
+                ) { _, isLoading in
                     if isLoading {
                         refreshRotation = 0
 
                         withAnimation(
-                            .linear(duration: 0.8)
-                            .repeatForever(autoreverses: false)
+                            .linear(
+                                duration: 0.8
+                            )
+                            .repeatForever(
+                                autoreverses: false
+                            )
                         ) {
                             refreshRotation = 360
                         }
                     } else {
-                        withAnimation(.easeOut(duration: 0.15)) {
+                        withAnimation(
+                            .easeOut(
+                                duration: 0.15
+                            )
+                        ) {
                             refreshRotation = 0
                         }
                     }
                 }
             }
 
-            if let error = store.errorMessage {
+            if let error =
+                store.errorMessage {
+
                 Label(
                     error,
-                    systemImage: "exclamationmark.triangle"
+                    systemImage:
+                        "exclamationmark.triangle"
                 )
                 .font(.caption)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
+                .foregroundStyle(
+                    .secondary
+                )
+                .fixedSize(
+                    horizontal: false,
+                    vertical: true
+                )
             }
 
-            if store.snapshot.limits.isEmpty &&
+            if store.snapshot
+                .limits.isEmpty &&
                 store.errorMessage == nil {
+
                 ProgressView()
-                    .frame(maxWidth: .infinity)
+                    .frame(
+                        maxWidth: .infinity
+                    )
             } else {
-                ForEach(store.snapshot.limits) { limit in
+                ForEach(
+                    store.snapshot.limits
+                ) { limit in
                     Button {
-                        withAnimation(.easeInOut(duration: 0.18)) {
-                            page = .limit(limit)
+                        withAnimation(
+                            .easeInOut(
+                                duration: 0.18
+                            )
+                        ) {
+                            page =
+                                .limit(limit)
                         }
                     } label: {
-                        LimitRow(limit: limit)
-                            .contentShape(Rectangle())
+                        LimitRow(
+                            limit: limit
+                        )
                     }
                     .buttonStyle(.plain)
                 }
             }
 
-            if let credits = store.snapshot.credits {
-                infoRow("Credits", credits)
+            if let credits =
+                store.snapshot.credits {
+
+                infoRow(
+                    "Credits",
+                    credits
+                )
             }
 
-            if let context = store.snapshot.context {
-                infoRow("Context", context)
+            if let context =
+                store.snapshot.context {
+
+                infoRow(
+                    "Context",
+                    context
+                )
             }
 
             Divider()
@@ -147,22 +255,39 @@ struct UsagePopoverView: View {
             HStack {
                 Text(updatedText)
                     .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(
+                        .tertiary
+                    )
 
                 Spacer()
 
                 Button {
-                    withAnimation(.easeInOut(duration: 0.18)) {
+                    withAnimation(
+                        .easeInOut(
+                            duration: 0.18
+                        )
+                    ) {
                         page = .settings
                     }
                 } label: {
-                    Image(systemName: "gearshape")
+                    Image(
+                        systemName:
+                            "gearshape"
+                    )
+                    .frame(
+                        width: 28,
+                        height: 28
+                    )
+                    .contentShape(
+                        Rectangle()
+                    )
                 }
                 .buttonStyle(.plain)
                 .help("Settings")
 
                 Button("Quit") {
-                    NSApplication.shared.terminate(nil)
+                    NSApplication.shared
+                        .terminate(nil)
                 }
                 .font(.caption)
             }
@@ -171,18 +296,42 @@ struct UsagePopoverView: View {
     }
 
     private var headerSubtitle: String {
-        [store.snapshot.model, store.snapshot.plan]
-            .compactMap { $0 }
-            .joined(separator: " · ")
-            .nonEmpty ?? "Codex CLI usage"
+        [
+            store.snapshot.model,
+            store.snapshot.plan
+        ]
+        .compactMap { $0 }
+        .joined(separator: " · ")
+        .nonEmpty ??
+            "Codex CLI usage"
     }
 
     private var updatedText: String {
         "Updated " +
-        store.snapshot.fetchedAt.formatted(
-            date: .omitted,
-            time: .standard
-        )
+            store.snapshot.fetchedAt
+                .formatted(
+                    date: .omitted,
+                    time: .standard
+                )
+    }
+
+    private var connectionStatusColor:
+        Color {
+
+        switch store.connectionStatus {
+        case .checking:
+            return .secondary
+
+        case .connected:
+            return .green
+
+        case .authenticationRequired:
+            return .orange
+
+        case .cliUnavailable,
+             .error:
+            return .red
+        }
     }
 
     private func infoRow(
@@ -191,7 +340,9 @@ struct UsagePopoverView: View {
     ) -> some View {
         HStack {
             Text(title)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(
+                    .secondary
+                )
 
             Spacer()
 
@@ -204,6 +355,8 @@ struct UsagePopoverView: View {
 
 private struct LimitRow: View {
     let limit: UsageLimit
+
+    @State private var isHovered = false
 
     private var statusColor: Color {
         if limit.remainingPercent <= 5 {
@@ -230,56 +383,118 @@ private struct LimitRow: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text(limit.name)
-                    .font(.subheadline.weight(.medium))
-
-                Spacer()
-
-                Text("\(Int(limit.remainingPercent))% left")
-                    .font(.caption)
-                    .foregroundStyle(valueColor)
-            }
-
-            ProgressView(
-                value: limit.remainingPercent,
-                total: 100
-            )
-            .tint(statusColor)
-
-            if let resetAt = limit.resetAt {
-                TimelineView(
-                    .periodic(from: .now, by: 60)
-                ) { context in
-                    HStack(spacing: 5) {
-                        Text(
-                            "Resets " +
-                            resetAt.formatted(
-                                .dateTime
-                                    .day()
-                                    .month(.abbreviated)
-                                    .hour()
-                                    .minute()
-                            )
+        HStack(spacing: 10) {
+            VStack(
+                alignment: .leading,
+                spacing: 6
+            ) {
+                HStack {
+                    Text(limit.name)
+                        .font(
+                            .subheadline
+                                .weight(.medium)
                         )
 
-                        Text("·")
+                    Spacer()
 
-                        Text(
-                            resetCountdown(
-                                to: resetAt,
-                                now: context.date
+                    Text(
+                        "\(Int(limit.remainingPercent))% left"
+                    )
+                    .font(.caption)
+                    .foregroundStyle(
+                        valueColor
+                    )
+                }
+
+                ProgressView(
+                    value:
+                        limit.remainingPercent,
+                    total: 100
+                )
+                .tint(statusColor)
+
+                if let resetAt =
+                    limit.resetAt {
+
+                    TimelineView(
+                        .periodic(
+                            from: .now,
+                            by: 60
+                        )
+                    ) { context in
+                        HStack(spacing: 5) {
+                            Text(
+                                "Resets " +
+                                resetAt.formatted(
+                                    .dateTime
+                                        .day()
+                                        .month(
+                                            .abbreviated
+                                        )
+                                        .hour()
+                                        .minute()
+                                )
                             )
+
+                            Text("·")
+
+                            Text(
+                                resetCountdown(
+                                    to: resetAt,
+                                    now:
+                                        context.date
+                                )
+                            )
+                        }
+                        .font(.caption2)
+                        .foregroundStyle(
+                            .secondary
                         )
                     }
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+                } else if let reset =
+                    limit.resetText {
+
+                    Text(reset)
+                        .font(.caption2)
+                        .foregroundStyle(
+                            .secondary
+                        )
                 }
-            } else if let reset = limit.resetText {
-                Text(reset)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+            }
+
+            Image(
+                systemName:
+                    "chevron.right"
+            )
+            .font(
+                .caption
+                    .weight(.semibold)
+            )
+            .foregroundStyle(
+                .tertiary
+            )
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 9)
+        .background {
+            RoundedRectangle(
+                cornerRadius: 8
+            )
+            .fill(
+                isHovered
+                    ? Color.primary
+                        .opacity(0.07)
+                    : Color.clear
+            )
+        }
+        .contentShape(Rectangle())
+        .onHover { hovering in
+            withAnimation(
+                .easeOut(
+                    duration: 0.12
+                )
+            ) {
+                isHovered = hovering
             }
         }
     }
@@ -288,16 +503,25 @@ private struct LimitRow: View {
         to resetDate: Date,
         now: Date
     ) -> String {
-        let seconds = resetDate.timeIntervalSince(now)
+        let seconds =
+            resetDate
+                .timeIntervalSince(now)
 
         guard seconds > 0 else {
             return "Resetting…"
         }
 
-        let totalMinutes = Int(seconds / 60)
-        let days = totalMinutes / 1_440
-        let hours = (totalMinutes % 1_440) / 60
-        let minutes = totalMinutes % 60
+        let totalMinutes =
+            Int(seconds / 60)
+
+        let days =
+            totalMinutes / 1_440
+
+        let hours =
+            (totalMinutes % 1_440) / 60
+
+        let minutes =
+            totalMinutes % 60
 
         if days > 0 {
             return "\(days)d \(hours)h"
@@ -316,7 +540,14 @@ private struct LimitDetailView: View {
     let onBack: () -> Void
 
     private var usedPercent: Double {
-        max(0, min(100, 100 - limit.remainingPercent))
+        max(
+            0,
+            min(
+                100,
+                100 -
+                    limit.remainingPercent
+            )
+        )
     }
 
     private var statusColor: Color {
@@ -332,17 +563,29 @@ private struct LimitDetailView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(
+            alignment: .leading,
+            spacing: 16
+        ) {
             HStack {
                 Button(action: onBack) {
                     HStack(spacing: 6) {
-                        Image(systemName: "chevron.left")
+                        Image(
+                            systemName:
+                                "chevron.left"
+                        )
 
                         Text(limit.name)
                             .font(.headline)
                     }
-                    .frame(height: 28)
-                    .contentShape(Rectangle())
+                    .padding(
+                        .horizontal,
+                        4
+                    )
+                    .frame(height: 32)
+                    .contentShape(
+                        Rectangle()
+                    )
                 }
                 .buttonStyle(.plain)
                 .help("Back")
@@ -350,17 +593,32 @@ private struct LimitDetailView: View {
                 Spacer()
             }
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(
+                alignment: .leading,
+                spacing: 8
+            ) {
                 Text("Remaining")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(
+                        .secondary
+                    )
 
-                Text("\(Int(limit.remainingPercent))%")
-                    .font(.system(size: 32, weight: .semibold))
-                    .foregroundStyle(statusColor)
+                Text(
+                    "\(Int(limit.remainingPercent))%"
+                )
+                .font(
+                    .system(
+                        size: 32,
+                        weight: .semibold
+                    )
+                )
+                .foregroundStyle(
+                    statusColor
+                )
 
                 ProgressView(
-                    value: limit.remainingPercent,
+                    value:
+                        limit.remainingPercent,
                     total: 100
                 )
                 .tint(statusColor)
@@ -370,38 +628,53 @@ private struct LimitDetailView: View {
 
             detailRow(
                 title: "Used",
-                value: "\(Int(usedPercent))%"
+                value:
+                    "\(Int(usedPercent))%"
             )
 
             detailRow(
                 title: "Remaining",
-                value: "\(Int(limit.remainingPercent))%"
+                value:
+                    "\(Int(limit.remainingPercent))%"
             )
 
-            if let resetAt = limit.resetAt {
+            if let resetAt =
+                limit.resetAt {
+
                 detailRow(
                     title: "Resets",
-                    value: resetAt.formatted(
-                        .dateTime
-                            .day()
-                            .month(.abbreviated)
-                            .hour()
-                            .minute()
-                    )
+                    value:
+                        resetAt.formatted(
+                            .dateTime
+                                .day()
+                                .month(
+                                    .abbreviated
+                                )
+                                .hour()
+                                .minute()
+                        )
                 )
 
                 TimelineView(
-                    .periodic(from: .now, by: 60)
+                    .periodic(
+                        from: .now,
+                        by: 60
+                    )
                 ) { context in
                     detailRow(
-                        title: "Time remaining",
-                        value: resetCountdown(
-                            to: resetAt,
-                            now: context.date
-                        )
+                        title:
+                            "Time remaining",
+                        value:
+                            resetCountdown(
+                                to: resetAt,
+                                now:
+                                    context.date
+                            )
                     )
                 }
-            } else if let reset = limit.resetText {
+            } else if let reset =
+                limit.resetText {
+
                 detailRow(
                     title: "Reset",
                     value: reset
@@ -419,7 +692,9 @@ private struct LimitDetailView: View {
     ) -> some View {
         HStack {
             Text(title)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(
+                    .secondary
+                )
 
             Spacer()
 
@@ -432,16 +707,25 @@ private struct LimitDetailView: View {
         to resetDate: Date,
         now: Date
     ) -> String {
-        let seconds = resetDate.timeIntervalSince(now)
+        let seconds =
+            resetDate
+                .timeIntervalSince(now)
 
         guard seconds > 0 else {
             return "Resetting…"
         }
 
-        let totalMinutes = Int(seconds / 60)
-        let days = totalMinutes / 1_440
-        let hours = (totalMinutes % 1_440) / 60
-        let minutes = totalMinutes % 60
+        let totalMinutes =
+            Int(seconds / 60)
+
+        let days =
+            totalMinutes / 1_440
+
+        let hours =
+            (totalMinutes % 1_440) / 60
+
+        let minutes =
+            totalMinutes % 60
 
         if days > 0 {
             return "\(days)d \(hours)h"
