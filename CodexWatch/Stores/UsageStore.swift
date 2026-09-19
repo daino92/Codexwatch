@@ -44,7 +44,7 @@ final class UsageStore: ObservableObject {
         notificationError = nil
 
         guard enabled else {
-            notifications.evaluate(snapshot.limits, enabled: false)
+            notifications.resetState()
             return
         }
 

@@ -4,6 +4,7 @@ import SwiftUI
 struct UsagePopoverView: View {
     @ObservedObject var store: UsageStore
     @State private var page: Page = .usage
+    @State private var refreshRotation = 0.0
 
     private enum Page {
         case usage
@@ -81,15 +82,28 @@ struct UsagePopoverView: View {
                         await store.refresh()
                     }
                 } label: {
-                    Image(
-                        systemName: store.isLoading
-                            ? "hourglass"
-                            : "arrow.clockwise"
-                    )
+                    Image(systemName: "arrow.clockwise")
+                        .rotationEffect(.degrees(refreshRotation))
                 }
                 .buttonStyle(.plain)
                 .disabled(store.isLoading)
-                .help("Refresh")
+                .help(store.isLoading ? "Refreshing…" : "Refresh")
+                .onChange(of: store.isLoading) { _, isLoading in
+                    if isLoading {
+                        refreshRotation = 0
+
+                        withAnimation(
+                            .linear(duration: 0.8)
+                            .repeatForever(autoreverses: false)
+                        ) {
+                            refreshRotation = 360
+                        }
+                    } else {
+                        withAnimation(.easeOut(duration: 0.15)) {
+                            refreshRotation = 0
+                        }
+                    }
+                }
             }
 
             if let error = store.errorMessage {
