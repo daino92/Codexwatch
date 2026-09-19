@@ -7,15 +7,21 @@ struct SettingsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 8) {
+            HStack {
                 Button(action: onBack) {
-                    Image(systemName: "chevron.left")
-                        .font(.body.weight(.semibold))
+                    HStack(spacing: 6) {
+                        Image(systemName: "chevron.left")
+
+                        Text("Settings")
+                            .font(.headline)
+                    }
+                    .padding(.horizontal, 4)
+                    .frame(height: 32)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .help("Back")
 
-                Text("Settings").font(.headline)
                 Spacer()
             }
 

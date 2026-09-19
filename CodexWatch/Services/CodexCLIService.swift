@@ -1,14 +1,28 @@
 import Foundation
 
 enum CodexCLIError: LocalizedError {
-    case notFound, empty, timedOut
+    case notFound
+    case empty
+    case timedOut
+    case authenticationRequired
     case failed(String)
+
     var errorDescription: String? {
         switch self {
-        case .notFound: return "Codex CLI was not found."
-        case .empty: return "Codex app-server returned no usage data."
-        case .timedOut: return "Codex app-server timed out."
-        case .failed(let text): return "Codex status failed: \(text)"
+        case .notFound:
+            return "Codex CLI was not found."
+
+        case .empty:
+            return "Codex app-server returned no usage data."
+
+        case .timedOut:
+            return "Codex app-server timed out."
+
+        case .authenticationRequired:
+            return "Codex authentication is required."
+
+        case .failed(let text):
+            return "Codex status failed: \(text)"
         }
     }
 }
@@ -57,7 +71,19 @@ actor CodexCLIService {
                         let lineData = buffer.prefix(upTo: newline); buffer.removeSubrange(...newline)
                         guard let object = try? JSONSerialization.jsonObject(with: lineData) as? [String: Any],
                               let id = object["id"] as? Int, id == 2 else { continue }
-                        if let error = object["error"] { finish(.failure(CodexCLIError.failed(String(describing: error)))); return }
+                        if let error = object["error"] {
+                            let text = String(describing: error)
+
+                            if text.localizedCaseInsensitiveContains("auth") ||
+                                text.localizedCaseInsensitiveContains("login") ||
+                                text.localizedCaseInsensitiveContains("unauthorized") {
+                                finish(.failure(CodexCLIError.authenticationRequired))
+                            } else {
+                                finish(.failure(CodexCLIError.failed(text)))
+                            }
+
+                            return
+                        }
                         guard let result = object["result"] as? [String: Any] else { finish(.failure(CodexCLIError.empty)); return }
                         let snapshot = CodexRateLimitsParser.parse(result)
                         if snapshot.limits.isEmpty { finish(.failure(CodexCLIError.failed("No rate-limit windows were returned."))) }
