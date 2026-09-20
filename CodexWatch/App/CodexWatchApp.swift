@@ -1,4 +1,3 @@
-import AppKit
 import SwiftUI
 
 @main
@@ -19,37 +18,8 @@ private struct MenuBarLabel: View {
     @ObservedObject var store: UsageStore
 
     var body: some View {
-        if let image = renderedMenuImage {
-            Image(nsImage: image)
-                .renderingMode(.original)
-                .accessibilityLabel(store.menuTitle)
-        } else {
-            Text(store.menuTitle)
-        }
-    }
-
-    private var renderedMenuImage: NSImage? {
-        let content = menuText
-            .font(.system(size: 13))
-            .fixedSize()
-            .padding(.horizontal, 2)
-            .frame(height: 18)
-            .environment(
-                \.colorScheme,
-                NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-                    ? .dark
-                    : .light
-            )
-
-        let renderer = ImageRenderer(content: content)
-        renderer.scale = 2
-
-        guard let image = renderer.nsImage else {
-            return nil
-        }
-
-        image.isTemplate = false
-        return image
+        menuText
+            .accessibilityLabel(store.menuTitle)
     }
 
     private var menuText: Text {
@@ -68,7 +38,7 @@ private struct MenuBarLabel: View {
         }
 
         let mode = MenuDisplayMode(rawValue: store.menuDisplayMode) ?? .both
-        let icon = Text("⌘ ").foregroundColor(.primary)
+        let icon = Text("⌘ ").foregroundColor(.white)
 
         // When regular weekly is exhausted and Luna Reserve is available,
         // show Luna instead of the exhausted weekly quota.
@@ -88,7 +58,7 @@ private struct MenuBarLabel: View {
 
         switch mode {
         case .iconOnly:
-            return Text("⌘").foregroundColor(.primary)
+            return Text("⌘").foregroundColor(.white)
 
         case .fiveHour:
             return icon +
@@ -112,7 +82,7 @@ private struct MenuBarLabel: View {
             }
 
             if fiveHour != nil && activeWeeklyLimit != nil {
-                text = text + Text(" · ").foregroundColor(.secondary)
+                text = text + Text(" · ").foregroundColor(.white)
             }
 
             if let activeWeeklyLimit {
@@ -127,17 +97,19 @@ private struct MenuBarLabel: View {
     }
 
     private var fallbackText: Text {
-        Text("Codex").foregroundColor(.primary)
+        Text("Codex").foregroundColor(.white)
     }
 
     private func quotaText(prefix: String, limit: UsageLimit) -> Text {
-        Text("\(prefix) \(Int(limit.remainingPercent))%")
-            .foregroundColor(color(for: limit.remainingPercent))
+        Text(prefix)
+            .foregroundColor(.white) +
+            Text(" \(Int(limit.remainingPercent))%")
+                .foregroundColor(color(for: limit.remainingPercent))
     }
 
     private func color(for remaining: Double) -> Color {
         if remaining <= 5 { return .red }
         if remaining <= 20 { return .orange }
-        return .primary
+        return .white
     }
 }
