@@ -32,6 +32,10 @@ Native macOS menu-bar monitor for Codex usage. CodexWatch reads structured rate-
 - Optional quota notifications at 20% and 5%
   - persistent deduplication prevents repeated alerts for the same threshold
   - notification state resets when a quota recovers/resets
+- Optional rapid-usage alerts
+  - detects a materially faster burn rate than recent usage
+  - estimates when the active quota may be exhausted
+  - limits rapid-usage alerts to one per quota every 30 minutes
 - Launch at Login
 - In-popover navigation for quota details and Settings
 - Larger native-style back-button hit areas
@@ -45,6 +49,8 @@ When enabled, CodexWatch can notify you when a quota reaches the following remai
 - **5% remaining** — critical quota warning
 
 CodexWatch stores the last notification band locally so restarting the app does not repeatedly trigger the same alert. Once a quota resets or recovers, notifications can trigger again during the next usage cycle.
+
+Rapid-usage alerts require several refresh samples before evaluating usage speed. They trigger only when the recent burn rate is at least twice the preceding average and reaches a minimum rate, then remain suppressed for 30 minutes.
 
 ## Codex CLI Integration
 

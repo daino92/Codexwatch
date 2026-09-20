@@ -74,6 +74,9 @@ final class UsageStore: ObservableObject {
     @AppStorage("quotaNotifications")
     var quotaNotifications = false
 
+    @AppStorage("rapidUsageNotifications")
+    var rapidUsageNotifications = false
+
     private let service = CodexCLIService()
     private let notifications =
         UsageNotificationManager()
@@ -112,7 +115,9 @@ final class UsageStore: ObservableObject {
 
             notifications.evaluate(
                 snapshot.limits,
-                enabled: quotaNotifications
+                enabled: quotaNotifications,
+                rapidUsageEnabled: quotaNotifications &&
+                    rapidUsageNotifications
             )
         } catch CodexCLIError.notFound {
             connectionStatus = .cliUnavailable
@@ -178,10 +183,44 @@ final class UsageStore: ObservableObject {
 
             notifications.evaluate(
                 snapshot.limits,
-                enabled: true
+                enabled: true,
+                rapidUsageEnabled: rapidUsageNotifications
             )
         } catch {
             quotaNotifications = false
+            notificationError =
+                "Couldn’t enable notifications: \(error.localizedDescription)"
+        }
+    }
+
+    func setRapidUsageNotifications(
+        _ enabled: Bool
+    ) async {
+        rapidUsageNotifications = enabled
+        notificationError = nil
+
+        guard enabled else {
+            notifications.resetRapidUsageState()
+            return
+        }
+
+        guard quotaNotifications else {
+            rapidUsageNotifications = false
+            return
+        }
+
+        do {
+            guard
+                try await notifications
+                    .requestAuthorization()
+            else {
+                rapidUsageNotifications = false
+                notificationError =
+                    "Notifications are disabled for CodexWatch in System Settings."
+                return
+            }
+        } catch {
+            rapidUsageNotifications = false
             notificationError =
                 "Couldn’t enable notifications: \(error.localizedDescription)"
         }
