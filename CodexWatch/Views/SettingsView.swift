@@ -38,6 +38,11 @@ struct SettingsView: View {
                         get: { store.quotaNotifications },
                         set: { value in Task { await store.setNotifications(value) } }
                     ))
+                    Toggle("Rapid usage alerts", isOn: Binding(
+                        get: { store.rapidUsageNotifications },
+                        set: { value in Task { await store.setRapidUsageNotifications(value) } }
+                    ))
+                    .disabled(!store.quotaNotifications)
                     if let error = store.notificationError {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(error)
@@ -72,7 +77,7 @@ struct SettingsView: View {
                 }
             }
             .formStyle(.grouped)
-            .frame(height: 315)
+            .frame(height: 350)
 
             Divider()
             HStack {
