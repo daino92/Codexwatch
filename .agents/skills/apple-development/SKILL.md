@@ -7,6 +7,12 @@ description: Build, modify, debug, and review native Swift, SwiftUI, macOS, and 
 
 Use this skill when working on Swift, SwiftUI, macOS, iOS, Xcode projects, or Apple platform APIs.
 
+## Specialized Skill Handoff
+
+When available in the active skills registry, also load and follow the specialized `Build macOS Apps` and `Build iOS Apps` skills. Use `Build macOS Apps` for macOS work, `Build iOS Apps` for iOS work, and both when a task spans platforms. Their platform-specific guidance takes precedence when instructions overlap; continue using this skill for the shared Apple/Xcode guidance.
+
+Do not block waiting for a skill activation or permission prompt. If either specialized skill is unavailable, requires approval that does not complete, or appears to freeze, continue with this skill and apply the relevant platform guidance here.
+
 ## Toolchain
 
 Use the installed Xcode toolchain.
