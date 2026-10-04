@@ -2,6 +2,8 @@
 
 Native macOS menu-bar monitor for Codex usage. CodexWatch reads structured rate-limit data locally from `codex app-server` using `account/rateLimits/read`, including Luna Reserve support, and does not send model prompts.
 
+![Illustrative CodexWatch menu bar and quota popover with sample values](docs/codexwatch-preview.svg)
+
 ## Features
 
 - Native macOS menu-bar app
@@ -79,14 +81,3 @@ Requirements:
 - macOS 14 or later
 - Xcode
 - Codex CLI installed and authenticated
-
-Open `CodexWatch.xcodeproj` in Xcode, select the **CodexWatch** scheme and **My Mac**, then press **⌘R**.
-
-## Current Development Notes
-
-The app currently works with the local Codex CLI and structured rate-limit API. There are two console warnings still under investigation:
-
-- AppKit may report `_NSDetectedLayoutRecursion` while laying out the menu-bar popover.
-- macOS may log `Unable to obtain a task name port right` when launching/interacting with the Codex subprocess.
-
-These are currently tracked as development issues and are not considered resolved.
