@@ -34,6 +34,17 @@ struct SettingsView: View {
                     if let error = store.launchAtLoginError {
                         Text(error).font(.caption2).foregroundStyle(.red)
                     }
+                    if store.launchAtLoginNeedsApproval {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Allow CodexWatch in System Settings to start it at login.")
+                                .font(.caption2)
+                                .foregroundStyle(.orange)
+                            Button("Open Login Items Settings") {
+                                store.openLoginItemSettings()
+                            }
+                            .font(.caption)
+                        }
+                    }
                     Toggle("Quota notifications at 20% and 5%", isOn: Binding(
                         get: { store.quotaNotifications },
                         set: { value in Task { await store.setNotifications(value) } }
@@ -89,6 +100,10 @@ struct SettingsView: View {
             .foregroundStyle(.tertiary)
         }
         .padding(16)
+        .onAppear { store.refreshLaunchAtLoginStatus() }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            store.refreshLaunchAtLoginStatus()
+        }
         .onChange(of: store.refreshInterval) { _, _ in store.configureTimer() }
     }
 

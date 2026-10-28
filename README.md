@@ -43,6 +43,8 @@ Native macOS menu-bar monitor for Codex usage. CodexWatch reads structured rate-
 - Larger native-style back-button hit areas
 - Hover states and navigation chevrons for clickable quota rows
 
+CodexWatch enables Launch at Login when run from Applications. If macOS requests approval, use the link in CodexWatch Settings to open Login Items. You can turn off Launch at Login in the app's Settings.
+
 ## Quota Notifications
 
 When enabled, CodexWatch can notify you when a quota reaches the following remaining-usage thresholds:

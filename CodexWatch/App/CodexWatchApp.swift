@@ -40,15 +40,30 @@ private struct MenuBarLabel: View {
         let mode = MenuDisplayMode(rawValue: store.menuDisplayMode) ?? .both
         let icon = Text("⌘ ").foregroundColor(.white)
 
+        let activeFiveHourLimit: UsageLimit?
+        let activeFiveHourPrefix: String
+
+        if store.isUsingLunaReserve {
+            activeFiveHourLimit = lunaReserve
+            activeFiveHourPrefix = "🌙 L"
+        } else {
+            activeFiveHourLimit = fiveHour
+            activeFiveHourPrefix = "5h"
+        }
+
         // When regular weekly is exhausted and Luna Reserve is available,
         // show Luna instead of the exhausted weekly quota.
         let activeWeeklyLimit: UsageLimit?
         let activeWeeklyPrefix: String
 
-        if let weekly,
-           weekly.remainingPercent <= 0,
-           let lunaReserve,
-           lunaReserve.remainingPercent > 0 {
+        if store.isUsingLunaReserve,
+           let lunaReserve {
+            activeWeeklyLimit = lunaReserve
+            activeWeeklyPrefix = "🌙 L"
+        } else if let weekly,
+                  weekly.remainingPercent <= 0,
+                  let lunaReserve,
+                  lunaReserve.remainingPercent > 0 {
             activeWeeklyLimit = lunaReserve
             activeWeeklyPrefix = "🌙 L"
         } else {
@@ -62,7 +77,9 @@ private struct MenuBarLabel: View {
 
         case .fiveHour:
             return icon +
-                (fiveHour.map { quotaText(prefix: "5h", limit: $0) } ?? fallbackText)
+                (activeFiveHourLimit.map {
+                    quotaText(prefix: activeFiveHourPrefix, limit: $0)
+                } ?? fallbackText)
 
         case .weekly:
             return icon +
@@ -71,17 +88,20 @@ private struct MenuBarLabel: View {
                 } ?? fallbackText)
 
         case .both:
-            guard fiveHour != nil || activeWeeklyLimit != nil else {
+            guard activeFiveHourLimit != nil || activeWeeklyLimit != nil else {
                 return icon + fallbackText
             }
 
             var text = icon
 
-            if let fiveHour {
-                text = text + quotaText(prefix: "5h", limit: fiveHour)
+            if let activeFiveHourLimit {
+                text = text + quotaText(
+                    prefix: activeFiveHourPrefix,
+                    limit: activeFiveHourLimit
+                )
             }
 
-            if fiveHour != nil && activeWeeklyLimit != nil {
+            if activeFiveHourLimit != nil && activeWeeklyLimit != nil {
                 text = text + Text(" · ").foregroundColor(.white)
             }
 

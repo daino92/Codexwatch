@@ -123,6 +123,15 @@ struct UsagePopoverView: View {
                     .foregroundStyle(
                         connectionStatusColor
                     )
+
+                    if store.isUsingLunaReserve {
+                        Label(
+                            "Luna Reserve active",
+                            systemImage: "moon.fill"
+                        )
+                        .font(.caption2)
+                        .foregroundStyle(.purple)
+                    }
                 }
 
                 Spacer()

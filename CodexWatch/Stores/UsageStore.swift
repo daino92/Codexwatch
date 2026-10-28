@@ -56,13 +56,19 @@ final class UsageStore: ObservableObject {
     @Published var connectionStatus: CodexConnectionStatus = .checking
 
     @Published var launchAtLogin =
-        LaunchAtLoginManager.isEnabled
+        LaunchAtLoginManager.isRegistered
+
+    @Published var launchAtLoginNeedsApproval =
+        LaunchAtLoginManager.needsApproval
 
     @Published var launchAtLoginError: String?
     @Published var notificationError: String?
 
     @AppStorage("refreshInterval")
     var refreshInterval: Double = 60
+
+    @AppStorage("launchAtLoginRequested")
+    private var launchAtLoginRequested = true
 
     @AppStorage("refreshOnOpen")
     var refreshOnOpen = true
@@ -85,6 +91,7 @@ final class UsageStore: ObservableObject {
 
     init() {
         configureTimer()
+        configureLaunchAtLogin()
 
         Task {
             await refresh()
@@ -230,20 +237,62 @@ final class UsageStore: ObservableObject {
         _ enabled: Bool
     ) {
         launchAtLoginError = nil
+        launchAtLoginRequested = enabled
 
         do {
             try LaunchAtLoginManager
                 .setEnabled(enabled)
 
-            launchAtLogin =
-                LaunchAtLoginManager.isEnabled
+            refreshLaunchAtLoginStatus()
         } catch {
-            launchAtLogin =
-                LaunchAtLoginManager.isEnabled
+            refreshLaunchAtLoginStatus()
 
             launchAtLoginError =
                 error.localizedDescription
         }
+    }
+
+    private func configureLaunchAtLogin() {
+        guard launchAtLoginRequested,
+              LaunchAtLoginManager.isInstalledInApplications else {
+            refreshLaunchAtLoginStatus()
+            return
+        }
+
+        do {
+            try LaunchAtLoginManager.setEnabled(true)
+        } catch {
+            launchAtLoginError = error.localizedDescription
+        }
+
+        refreshLaunchAtLoginStatus()
+    }
+
+    func refreshLaunchAtLoginStatus() {
+        launchAtLogin = LaunchAtLoginManager.isRegistered
+        launchAtLoginNeedsApproval = LaunchAtLoginManager.needsApproval
+    }
+
+    func openLoginItemSettings() {
+        LaunchAtLoginManager.openSystemSettings()
+    }
+
+    var isUsingLunaReserve: Bool {
+        let fiveHour = snapshot.limits.first {
+            $0.name.localizedCaseInsensitiveContains("5-hour") ||
+                $0.name.localizedCaseInsensitiveContains("5h")
+        }
+        let lunaReserve = snapshot.limits.first {
+            $0.name.localizedCaseInsensitiveContains("luna")
+        }
+
+        guard let fiveHour,
+              fiveHour.remainingPercent <= 0,
+              let lunaReserve else {
+            return false
+        }
+
+        return lunaReserve.remainingPercent > 0
     }
 
     var menuTitle: String {
@@ -284,13 +333,28 @@ final class UsageStore: ObservableObject {
                 rawValue: menuDisplayMode
             ) ?? .both
 
+        let activeFiveHourLimit: UsageLimit?
+        let activeFiveHourPrefix: String
+
+        if isUsingLunaReserve {
+            activeFiveHourLimit = lunaReserve
+            activeFiveHourPrefix = "🌙 L"
+        } else {
+            activeFiveHourLimit = fiveHour
+            activeFiveHourPrefix = "5h"
+        }
+
         let activeWeeklyLimit: UsageLimit?
         let activeWeeklyPrefix: String
 
-        if let weekly,
-           weekly.remainingPercent <= 0,
-           let lunaReserve,
-           lunaReserve.remainingPercent > 0 {
+        if isUsingLunaReserve,
+           let lunaReserve {
+            activeWeeklyLimit = lunaReserve
+            activeWeeklyPrefix = "🌙 L"
+        } else if let weekly,
+                  weekly.remainingPercent <= 0,
+                  let lunaReserve,
+                  lunaReserve.remainingPercent > 0 {
 
             activeWeeklyLimit = lunaReserve
             activeWeeklyPrefix = "🌙 L"
@@ -304,8 +368,8 @@ final class UsageStore: ObservableObject {
             return "⌘"
 
         case .fiveHour:
-            return fiveHour.map {
-                "⌘ 5h \(Int($0.remainingPercent))%"
+            return activeFiveHourLimit.map {
+                "⌘ \(activeFiveHourPrefix) \(Int($0.remainingPercent))%"
             } ?? "⌘ Codex"
 
         case .weekly:
@@ -315,8 +379,8 @@ final class UsageStore: ObservableObject {
 
         case .both:
             let parts = [
-                fiveHour.map {
-                    "5h \(Int($0.remainingPercent))%"
+                activeFiveHourLimit.map {
+                    "\(activeFiveHourPrefix) \(Int($0.remainingPercent))%"
                 },
                 activeWeeklyLimit.map {
                     "\(activeWeeklyPrefix) \(Int($0.remainingPercent))%"
